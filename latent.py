@@ -17,12 +17,18 @@ def parse_arg():
     parser = argparse.ArgumentParser(description='Check latent variables of VRAE-LSTM for specified data files')
     parser.add_argument('-m', '--model', type=str, nargs=1,
                         help='load a pre-trained model which is used to caluclate latent variables.')
-    parser.add_argument('-s', '--save_fig', type=str, help='save the plot to specified file.')
-    parser.add_argument('-n', '--no_plot', action='store_true', help='print raw data instead of plotting.')
-    parser.add_argument('-p', '--use_pca', action='store_true', help='apply PCA before plotting.')
-    parser.add_argument('-3', '--use_3d', action='store_true', help='use 3D data.')
-    parser.add_argument('-f', '--use_filename', action='store_true', help='use filename instead of label for legend.')
-    parser.add_argument('data_files', type=str, nargs='+', help='file name(s) of skeleton data.')
+    parser.add_argument('-s', '--save_fig', type=str,
+                        help='save the plot to specified file.')
+    parser.add_argument('-n', '--no_plot', action='store_true',
+                        help='print raw data instead of plotting.')
+    parser.add_argument('-p', '--use_pca', action='store_true',
+                        help='apply PCA before plotting.')
+    parser.add_argument('-3', '--use_3d', action='store_true',
+                        help='use 3D data.')
+    parser.add_argument('-f', '--use_filename', action='store_true',
+                        help='use filename instead of label for legend.')
+    parser.add_argument('data_files', type=str, nargs='+',
+                        help='file name(s) of skeleton data.')
     return parser.parse_args()
 
 

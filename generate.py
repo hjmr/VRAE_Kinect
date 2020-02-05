@@ -12,9 +12,12 @@ def parse_arg():
     parser = argparse.ArgumentParser(description='Generate movement corresponding to a set of latent variables.')
     parser.add_argument('-m', '--model', type=str, nargs=1,
                         help='load a pre-trained model which is used to generate the movement.')
-    parser.add_argument('-l', '--length', type=int, default=500, help='movement length to be generated.')
-    parser.add_argument('-o', '--output_file', type=str, help='a file name to which JSON data will be stored.')
-    parser.add_argument('latent_data', type=str, nargs=1, help='a set of latent variables.')
+    parser.add_argument('-l', '--length', type=int, default=500,
+                        help='movement length to be generated.')
+    parser.add_argument('-o', '--output_file', type=str,
+                        help='a file name to which JSON data will be stored.')
+    parser.add_argument('latent_data', type=str, nargs=1,
+                        help='a set of latent variables.')
     return parser.parse_args()
 
 
