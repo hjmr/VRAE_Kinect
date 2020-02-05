@@ -53,7 +53,7 @@ def parse_arg():
 def init_data(data_files, device):
     data_set = []
     for file_name in data_files:
-        data_set.append(torch.tensor(dataset.get(file_name), dtype=torch.float, device=device))
+        data_set.append(torch.FloatTensor(dataset.get(file_name), device=device))
     return data_set
 
 
