@@ -78,7 +78,7 @@ class VRAE(nn.Module):
 
     def loss(self, x_inp, beta=1.0, k=1):
         mu, ln_var = self.encode(x_inp)
-        loss_func = nn.MSELoss(size_average=True)
+        loss_func = nn.MSELoss(reduction='mean')
         n_batch = x_inp.size(0)
         seq_len = x_inp.size(1)
         y_inp = torch.ones(n_batch, seq_len, self.n_input)
