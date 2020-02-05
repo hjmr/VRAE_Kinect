@@ -141,10 +141,10 @@ def train_model():
                 'train_loss': train_loss,
                 'test_loss': test_loss
             }
-            checkpoint_path = '{}/{}_{}.checkpoint'.format(args.output_dir, args.file_name, epoch)
+            checkpoint_path = '{}/{}_{}.checkpoint'.format(args.output_dir, args.base_file_name, epoch)
             torch.save(checkpoint, checkpoint_path)
 
-    model_path = '{}/{}_final.model'.format(args.output_dir, args.file_name)
+    model_path = '{}/{}_final.model'.format(args.output_dir, args.base_file_name)
     torch.save(model, model_path)
 
 
