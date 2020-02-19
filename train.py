@@ -96,7 +96,7 @@ def train_model():
         model = VRAE(args.input_dims, args.enc_states, args.latent_dims, args.dec_states,
                      args.enc_layers, args.dec_layers, args.dropout_rate).to(device)
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     num_train = int(num_data * 0.8)
     num_test = num_data - num_train
