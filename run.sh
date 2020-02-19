@@ -1,7 +1,7 @@
 #!/bin/bash
 
 run_dir=.
-out_base=${run_dir}/models
+out_base=${run_dir}/models/tmp
 data_dir=../../Kinect/data/normalized
 
 
