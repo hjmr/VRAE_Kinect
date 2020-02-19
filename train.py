@@ -122,16 +122,16 @@ def train_model():
             loss = model.loss(x_data, k=1)
             loss.backward()
             optimizer.step()
-            train_loss += loss
+            train_loss += loss * len(x_data)
 
         # evaluation
         test_loss = 0
         with torch.no_grad():
             for indices in test_iter:
                 x_data, x_len = make_batch([test_dat[idx] for idx in indices], device)
-                test_loss += model.loss(x_data, k=10)
+                test_loss += model.loss(x_data, k=10) * len(x_data)
 
-        output_log(epoch, train_loss, test_loss)
+        output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
 
         if (epoch + 1) % args.save_interval == 0:
             checkpoint = {
