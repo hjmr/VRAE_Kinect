@@ -52,7 +52,7 @@ def parse_arg():
 def init_data(data_files, device):
     data_set = []
     for file_name in data_files:
-        data_set.append(torch.FloatTensor(dataset.get(file_name), device=device))
+        data_set.append(torch.FloatTensor(dataset.get(file_name)))
     return data_set
 
 
@@ -61,11 +61,11 @@ def output_log(epoch, train_loss, test_loss):
 
 
 def make_batch(x_list, device):
-    x_len = torch.LongTensor([len(x) for x in x_list], device=device)
+    x_len = torch.LongTensor([len(x) for x in x_list])
     x_list = pad_sequence(x_list, batch_first=True)
     x_len, perm_idx = x_len.sort(0, descending=True)
     x_list = x_list[perm_idx]
-    return x_list, x_len
+    return x_list.to(device), x_len.to(device)
 
 
 def train_model():

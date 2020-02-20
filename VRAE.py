@@ -72,15 +72,14 @@ class VRAE(nn.Module):
         n_batch = z.size(0)
         packed_in = pack_padded_sequence(dec_inp, inp_len, batch_first=True)
         h_dec = self.gen_z_h(z)
-        dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden,
-                             requires_grad=True, device=self.get_device())
+        dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
         packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
         out, out_len = pad_packed_sequence(packed_out, batch_first=True)
         return self.dec_out(out)
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = make_ones(seq_len, self.n_input, self.get_device())
+            dec_inp = make_ones(seq_len, self.n_input).to(self.get_device())
             dec_out = self.decode(z, dec_inp, seq_len)
         return dec_out
 
@@ -88,7 +87,7 @@ class VRAE(nn.Module):
         mu, ln_var = self.encode(enc_inp, inp_len)
         loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
-        dec_inp = make_ones(inp_len, self.n_input, self.get_device())
+        dec_inp = make_ones(inp_len, self.n_input).to(self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
