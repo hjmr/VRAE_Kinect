@@ -6,6 +6,11 @@ import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 
 
+def make_ones(seq_len, n_elements, device):
+    seq_list = [torch.FloatTensor([[1.0 for _ in range(n_elements)] for _ in range(v)], device=device) for v in seq_len]
+    return pad_sequence(seq_list, batch_first=True)
+
+
 class VRAE(nn.Module):
     "Variational Recurrent AUtoEncoder with LSTM"
 
@@ -77,13 +82,9 @@ class VRAE(nn.Module):
         out, out_len = pad_packed_sequence(packed_out, batch_first=True)
         return self.dec_out(out)
 
-    def make_ones(self, seq_len, n_elements):
-        seq_list = [torch.FloatTensor([[1.0 for _ in range(n_elements)] for _ in range(v)]) for v in seq_len]
-        return pad_sequence(seq_list, batch_first=True)
-
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = self.make_ones(seq_len, self.n_input).to(device=self.get_device())
+            dec_inp = make_ones(seq_len, self.n_input, self.get_device())
             dec_out = self.decode(z, dec_inp, seq_len)
         return dec_out
 
@@ -91,7 +92,7 @@ class VRAE(nn.Module):
         mu, ln_var = self.encode(enc_inp, inp_len)
         loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
-        dec_inp = self.make_ones(inp_len, self.n_input).to(self.get_device())
+        dec_inp = make_ones(inp_len, self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
