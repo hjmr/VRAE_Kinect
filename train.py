@@ -4,8 +4,9 @@ import pickle
 import torch
 import torch.utils.data as tud
 
-from VRAE import VRAE, pre_pad_sequence
+from VRAE import VRAE
 import dataset
+from utils import pre_pad_sequence
 
 
 def parse_arg():
