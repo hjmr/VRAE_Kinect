@@ -1,10 +1,8 @@
 import argparse
 import pickle
 
-import numpy
 import torch
 import torch.utils.data as tud
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 
 from VRAE import VRAE, pre_pad_sequence
 import dataset

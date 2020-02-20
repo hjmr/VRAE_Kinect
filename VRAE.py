@@ -1,6 +1,5 @@
 import six
 
-import numpy
 import torch
 import torch.nn as nn
 
