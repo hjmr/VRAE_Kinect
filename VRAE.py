@@ -1,14 +1,10 @@
 import six
 
-import numpy
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-
-def make_ones(seq_len, n_elements, device):
-    seq_list = [torch.FloatTensor([[1.0 for _ in range(n_elements)] for _ in range(v)], device=device) for v in seq_len]
-    return pad_sequence(seq_list, batch_first=True)
+from utils import make_ones
 
 
 class VRAE(nn.Module):
