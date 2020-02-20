@@ -21,12 +21,12 @@ function run_once() {
   echo "done."
 }
 
-epoch=1000
+epoch=100
 save_int=20000
-batch_size=5
+batch_size=10
 beta=0.05
 
-n_hidden=200
+n_hidden=300
 n_latent=3
 n_layers=1
 run_once
