@@ -5,7 +5,7 @@ description = ""
 authors = ["hjmr <2620990+hjmr@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 torch = "^1.4.0"
 torchvision = "^0.5.0"
 matplotlib = "^3.1.3"
