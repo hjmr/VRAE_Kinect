@@ -49,7 +49,7 @@ def parse_arg():
     return parser.parse_args()
 
 
-def init_data(data_files, device):
+def init_data(data_files):
     data_set = []
     for file_name in data_files:
         data_set.append(torch.FloatTensor(dataset.get(file_name)))
@@ -72,7 +72,7 @@ def train_model():
     args = parse_arg()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    data_set = init_data(args.data_files, device)
+    data_set = init_data(args.data_files)
     n_input = max([d.data.shape[1] for d in data_set])
     num_data = len(data_set)
 
