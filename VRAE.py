@@ -3,7 +3,24 @@ import six
 import numpy
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
+
+
+def make_ones(seq_len, n_elements, device):
+    seq_list = [torch.FloatTensor([[1.0 for _ in range(n_elements)] for _ in range(v)], device=device) for v in seq_len]
+    return pre_pad_sequence(seq_list, device=device)
+
+
+def pre_pad_sequence(seq, device):
+    n_batch = len(seq)
+    seq_len = [len(s) for s in seq]
+    max_len = max(seq_len)
+    n_elements = seq[0].size(1)
+
+    out_seq = torch.zeros(n_batch, max_len, n_elements, device=device)
+    for i, t in enumerate(seq):
+        l = t.size(0)
+        out_seq[i, max_len-l:, ...] = t
+    return out_seq, seq_len
 
 
 class VRAE(nn.Module):
@@ -55,47 +72,40 @@ class VRAE(nn.Module):
     def get_device(self):
         return next(self.parameters()).device
 
-    def forward(self, enc_inp, dec_inp, inp_len):
-        mu, ln_var = self.encode(enc_inp, inp_len)
-        return self.decode(mu, dec_inp, inp_len)
+    def forward(self, enc_inp, dec_inp):
+        mu, ln_var = self.encode(enc_inp)
+        return self.decode(mu, dec_inp)
 
-    def encode(self, enc_inp, inp_len):
+    def encode(self, enc_inp):
         n_batch = enc_inp.size(0)
-        packed_in = pack_padded_sequence(enc_inp, inp_len, batch_first=True)
-        _, (h_enc, _) = self.encoder(packed_in)
+        _, (h_enc, _) = self.encoder(enc_inp)
         mu = self.enc_mu(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
         ln_var = self.enc_ln_var(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
         return mu, ln_var
 
-    def decode(self, z, dec_inp, inp_len):
+    def decode(self, z, dec_inp):
         n_batch = z.size(0)
-        packed_in = pack_padded_sequence(dec_inp, inp_len, batch_first=True)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden,
                              requires_grad=True, device=self.get_device())
-        packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
-        out, out_len = pad_packed_sequence(packed_out, batch_first=True)
+        out, _ = self.decoder(dec_inp, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
         return self.dec_out(out)
-
-    def make_ones(self, seq_len, n_elements):
-        seq_list = [torch.FloatTensor([[1.0 for _ in range(n_elements)] for _ in range(v)]) for v in seq_len]
-        return pad_sequence(seq_list, batch_first=True)
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = self.make_ones(seq_len, self.n_input).to(device=self.get_device())
-            dec_out = self.decode(z, dec_inp, seq_len)
+            dec_inp, _ = make_ones(seq_len, self.n_input, self.get_device())
+            dec_out = self.decode(z, dec_inp)
         return dec_out
 
     def loss(self, enc_inp, inp_len, beta=1.0, k=1):
-        mu, ln_var = self.encode(enc_inp, inp_len)
+        mu, ln_var = self.encode(enc_inp)
         loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
-        dec_inp = self.make_ones(inp_len, self.n_input).to(self.get_device())
+        dec_inp, _ = make_ones(inp_len, self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
-            dec_out = self.decode(z, dec_inp, inp_len)
+            dec_out = self.decode(z, dec_inp)
             rec_loss += loss_func(enc_inp, dec_out)
         rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp()) / n_batch

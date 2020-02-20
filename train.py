@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as tud
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 
-from VRAE import VRAE
+from VRAE import VRAE, pre_pad_sequence
 import dataset
 
 
@@ -61,14 +61,6 @@ def output_log(epoch, train_loss, test_loss):
     print("{}, {}, {}".format(epoch, train_loss, test_loss), flush=True)
 
 
-def make_batch(x_list, device):
-    x_len = torch.LongTensor([len(x) for x in x_list], device=device)
-    x_list = pad_sequence(x_list, batch_first=True)
-    x_len, perm_idx = x_len.sort(0, descending=True)
-    x_list = x_list[perm_idx]
-    return x_list, x_len
-
-
 def train_model():
     args = parse_arg()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -117,7 +109,7 @@ def train_model():
     for epoch in range(args.epoch):
         train_loss = 0
         for indices in train_iter:
-            x_data, x_len = make_batch([train_dat[idx] for idx in indices], device)
+            x_data, x_len = pre_pad_sequence([train_dat[idx] for idx in indices], device)
             model.zero_grad()
             loss = model.loss(x_data, x_len, k=1)
             loss.backward()
@@ -128,7 +120,7 @@ def train_model():
         test_loss = 0
         with torch.no_grad():
             for indices in test_iter:
-                x_data, x_len = make_batch([test_dat[idx] for idx in indices], device)
+                x_data, x_len = pre_pad_sequence([test_dat[idx] for idx in indices], device)
                 test_loss += model.loss(x_data, x_len, k=10) * len(x_data)
 
         output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
