@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from utils import make_ones, ensure_padded_sequence
+from utils import make_padded_ones, make_unpadded_sequence
 
 
 class VRAE(nn.Module):
@@ -39,7 +39,7 @@ class VRAE(nn.Module):
                                    hidden_size=n_dec_hidden,
                                    num_layers=n_dec_layers,
                                    batch_first=True)
-        self.calc_output = nn.Linear(n_dec_hidden, n_input)
+        self.dec_linear = nn.Linear(n_dec_hidden, n_input)
 
         # Parameters
         self.n_input = n_input
@@ -69,18 +69,17 @@ class VRAE(nn.Module):
         return mu, ln_var
 
     def decode(self, z, dec_inp, inp_len):
-        n_batch = z.size(0)
+        n_batch = dec_inp.size(0)
         packed_in = pack_padded_sequence(dec_inp, inp_len, batch_first=True)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
         packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
         dec_out, out_len = pad_packed_sequence(packed_out, batch_first=True)
-        out, out_len = ensure_padded_sequence(self.calc_output(dec_out), out_len)
-        return out, out_len
+        return self.dec_linear(dec_out), out_len
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = make_ones(seq_len, self.n_input).to(self.get_device())
+            dec_inp = make_padded_ones(seq_len, self.n_input).to(self.get_device())
             dec_out, out_len = self.decode(z, dec_inp, seq_len)
         return dec_out, out_len
 
@@ -88,12 +87,13 @@ class VRAE(nn.Module):
         mu, ln_var = self.encode(enc_inp, inp_len)
         loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
-        dec_inp = make_ones(inp_len, self.n_input).to(self.get_device())
+        dec_inp = make_padded_ones(inp_len, self.n_input).to(self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
             dec_out, out_len = self.decode(z, dec_inp, inp_len)
-            rec_loss += loss_func(enc_inp, dec_out)
+            for o, t in zip(make_unpadded_sequence(dec_out, out_len), make_unpadded_sequence(enc_inp, inp_len)):
+                rec_loss += loss_func(o, t)
         rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp()) / n_batch
         return rec_loss + beta * kld
