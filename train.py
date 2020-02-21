@@ -6,7 +6,6 @@ import torch.utils.data as tud
 
 from VRAE import VRAE
 import dataset
-from utils import pre_pad_sequence
 
 
 def parse_arg():
@@ -108,19 +107,19 @@ def train_model():
     for epoch in range(args.epoch):
         train_loss = 0
         for indices in train_iter:
-            x_data, x_len = pre_pad_sequence([train_dat[idx] for idx in indices], device)
+            x_data = [train_dat[idx] for idx in indices]
             model.zero_grad()
-            loss = model.loss(x_data, x_len, k=1)
+            loss = model.loss(x_data, k=1)
             loss.backward()
             optimizer.step()
-            train_loss += loss * len(x_data)
+            train_loss += loss
 
         # evaluation
         test_loss = 0
         with torch.no_grad():
             for indices in test_iter:
-                x_data, x_len = pre_pad_sequence([test_dat[idx] for idx in indices], device)
-                test_loss += model.loss(x_data, x_len, k=10) * len(x_data)
+                x_data = [test_dat[idx] for idx in indices]
+                test_loss += model.loss(x_data, k=10)
 
         output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
 
