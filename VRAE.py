@@ -13,32 +13,22 @@ class VRAE(nn.Module):
     def __init__(self, n_input, n_enc_hidden, n_latent, n_dec_hidden, n_enc_layers=1, n_dec_layers=1, dropout_rate=0.5):
         super(VRAE, self).__init__()
         # Encoder
-        if 1 < n_enc_layers:
-            self.encoder = nn.LSTM(input_size=n_input,
-                                   hidden_size=n_enc_hidden,
-                                   num_layers=n_enc_layers,
-                                   dropout=dropout_rate,
-                                   batch_first=True)
-        else:
-            self.encoder = nn.LSTM(input_size=n_input,
-                                   hidden_size=n_enc_hidden,
-                                   num_layers=n_enc_layers,
-                                   batch_first=True)
+        enc_dropout = 0 if n_enc_layers == 1 else dropout_rate
+        self.encoder = nn.LSTM(input_size=n_input,
+                               hidden_size=n_enc_hidden,
+                               num_layers=n_enc_layers,
+                               dropout=enc_dropout,
+                               batch_first=True)
         self.enc_mu = nn.Linear(n_enc_layers * n_enc_hidden, n_latent)
         self.enc_ln_var = nn.Linear(n_enc_layers * n_enc_hidden, n_latent)
         # Decoder
         self.gen_z_h = nn.Linear(n_latent, n_dec_layers * n_dec_hidden)
-        if 1 < n_dec_layers:
-            self.decoder = nn.LSTM(input_size=n_input,
-                                   hidden_size=n_dec_hidden,
-                                   num_layers=n_dec_layers,
-                                   dropout=dropout_rate,
-                                   batch_first=True)
-        else:
-            self.decoder = nn.LSTM(input_size=n_input,
-                                   hidden_size=n_dec_hidden,
-                                   num_layers=n_dec_layers,
-                                   batch_first=True)
+        dec_dropout = 0 if n_dec_layers == 1 else dropout_rate
+        self.decoder = nn.LSTM(input_size=n_input,
+                               hidden_size=n_dec_hidden,
+                               num_layers=n_dec_layers,
+                               dropout=dec_dropout,
+                               batch_first=True)
         self.dec_linear = nn.Linear(n_dec_hidden, n_input)
 
         # Parameters
