@@ -28,7 +28,7 @@ def generate(args):
     latent = torch.FloatTensor([[float(x) for x in args.latent_data[0].replace('m', '-').split(',')]])
     ret = None
     with torch.no_grad():
-        ret = model.generate(latent, args.length)
+        ret, _ = model.generate(latent, [args.length])
     return ret[0]  # first batch
 
 
