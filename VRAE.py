@@ -79,7 +79,7 @@ class VRAE(nn.Module):
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = make_padded_ones(seq_len, self.n_input).to(self.get_device())
+            dec_inp = make_padded_ones(seq_len, self.n_input, self.get_device())
             dec_out, out_len = self.decode(z, dec_inp, seq_len)
         return dec_out, out_len
 
@@ -87,7 +87,7 @@ class VRAE(nn.Module):
         mu, ln_var = self.encode(enc_inp, inp_len)
         loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
-        dec_inp = make_padded_ones(inp_len, self.n_input).to(self.get_device())
+        dec_inp = make_padded_ones(inp_len, self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)

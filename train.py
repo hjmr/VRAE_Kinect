@@ -50,10 +50,10 @@ def parse_arg():
     return parser.parse_args()
 
 
-def init_data(data_files):
+def init_data(data_files, device):
     data_set = []
     for file_name in data_files:
-        data_set.append(torch.FloatTensor(dataset.get(file_name)))
+        data_set.append(torch.FloatTensor(dataset.get(file_name)).to(device))
     return data_set
 
 
@@ -65,7 +65,7 @@ def train_model():
     args = parse_arg()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    data_set = init_data(args.data_files)
+    data_set = init_data(args.data_files, device)
     n_input = max([d.data.shape[1] for d in data_set])
     num_data = len(data_set)
 
@@ -109,9 +109,9 @@ def train_model():
     for epoch in range(args.epoch):
         train_loss = 0
         for indices in train_iter:
-            x_data, x_len = make_padded_sequence([train_dat[idx] for idx in indices])
+            x_data, x_len = make_padded_sequence([train_dat[idx] for idx in indices], device)
             model.zero_grad()
-            loss = model.loss(x_data.to(device), x_len.to(device), k=1)
+            loss = model.loss(x_data, x_len, k=1)
             loss.backward()
             optimizer.step()
             train_loss += loss
@@ -120,8 +120,8 @@ def train_model():
         test_loss = 0
         with torch.no_grad():
             for indices in test_iter:
-                x_data, x_len = make_padded_sequence([test_dat[idx] for idx in indices])
-                test_loss += model.loss(x_data.to(device), x_len.to(device), k=10)
+                x_data, x_len = make_padded_sequence([test_dat[idx] for idx in indices], device)
+                test_loss += model.loss(x_data, x_len, k=10)
 
         output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
 

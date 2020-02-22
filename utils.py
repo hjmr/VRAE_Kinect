@@ -2,13 +2,13 @@ import torch
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 
 
-def make_padded_ones(seq_len, n_elements):
-    seq = [torch.ones(s, n_elements) for s in seq_len]
+def make_padded_ones(seq_len, n_elements, device):
+    seq = [torch.ones(s, n_elements).to(device) for s in seq_len]
     return pad_sequence(seq, batch_first=True)
 
 
-def make_padded_sequence(seq):
-    seq_len = torch.LongTensor([len(s) for s in seq])
+def make_padded_sequence(seq, device):
+    seq_len = torch.LongTensor([len(s) for s in seq]).to(device)
     seq = pad_sequence(seq, batch_first=True)
     seq_len, perm_idx = seq_len.sort(0, descending=True)
     seq = seq[perm_idx]
