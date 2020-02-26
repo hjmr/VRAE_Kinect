@@ -41,7 +41,7 @@ class VRAE(nn.Module):
         self.dropout_rate = dropout_rate
 
         # Loss
-        self.rec_loss = 0
+        self.loss_func = nn.MSELoss(reduction='mean')
 
     def get_device(self):
         return next(self.parameters()).device
@@ -75,7 +75,6 @@ class VRAE(nn.Module):
 
     def loss(self, enc_inp, inp_len, beta=1.0, k=1):
         mu, ln_var = self.encode(enc_inp, inp_len)
-        loss_func = nn.MSELoss(reduction='mean')
         n_batch = enc_inp.size(0)
         dec_inp = make_padded_ones(inp_len, self.n_input, self.get_device())
         rec_loss = 0
@@ -83,7 +82,7 @@ class VRAE(nn.Module):
             z = torch.normal(mu, ln_var)
             dec_out, out_len = self.decode(z, dec_inp, inp_len)
             for o, t in zip(make_unpadded_sequence(dec_out, out_len), make_unpadded_sequence(enc_inp, inp_len)):
-                rec_loss += loss_func(o, t)
+                rec_loss += self.loss_func(o, t)
         rec_loss /= (k * n_batch)
-        kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp()) / n_batch
+        kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())
         return rec_loss + beta * kld

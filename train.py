@@ -112,7 +112,7 @@ def train_model():
         train_loss = 0
         for indices in train_iter:
             x_data, x_len = make_padded_sequence([train_dat[idx] for idx in indices], device)
-            model.zero_grad()
+            optimizer.zero_grad()
             loss = model.loss(x_data, x_len, k=1)
             loss.backward()
             optimizer.step()
