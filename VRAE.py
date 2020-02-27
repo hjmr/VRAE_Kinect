@@ -76,13 +76,12 @@ class VRAE(nn.Module):
     def loss(self, enc_inp, beta=1.0, k=1):
         mu, ln_var = self.encode(enc_inp)
         n_batch = len(enc_inp)
-        inp_len = [len(s) for s in enc_inp]
-        dec_inp = make_ones(inp_len, self.n_input, self.get_device())
+        dec_inp = make_ones([len(s) for s in enc_inp], self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
             dec_out, out_len = self.decode(z, dec_inp)
-            for o, t in zip(unpad_sequence(dec_out, out_len), unpad_sequence(enc_inp, inp_len)):
+            for o, t in zip(unpad_sequence(dec_out, out_len), enc_inp):
                 rec_loss += self.loss_func(o, t)
         rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())
