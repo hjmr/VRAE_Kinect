@@ -2,9 +2,9 @@ import six
 
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torch.nn.utils.rnn import pack_sequence, pad_packed_sequence
 
-from utils import make_padded_ones, make_unpadded_sequence
+from utils import make_ones, unpad_sequence
 
 
 class VRAE(nn.Module):
@@ -46,21 +46,21 @@ class VRAE(nn.Module):
     def get_device(self):
         return next(self.parameters()).device
 
-    def forward(self, enc_inp, dec_inp, inp_len):
-        mu, ln_var = self.encode(enc_inp, inp_len)
-        return self.decode(mu, dec_inp, inp_len)
+    def forward(self, enc_inp, dec_inp):
+        mu, ln_var = self.encode(enc_inp)
+        return self.decode(mu, dec_inp)
 
-    def encode(self, enc_inp, inp_len):
-        n_batch = enc_inp.size(0)
-        packed_in = pack_padded_sequence(enc_inp, inp_len, batch_first=True)
+    def encode(self, enc_inp):
+        n_batch = len(enc_inp)
+        packed_in = pack_sequence(enc_inp, enforce_sorted=False)
         _, (h_enc, _) = self.encoder(packed_in)
         mu = self.enc_mu(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
         ln_var = self.enc_ln_var(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
         return mu, ln_var
 
-    def decode(self, z, dec_inp, inp_len):
-        n_batch = dec_inp.size(0)
-        packed_in = pack_padded_sequence(dec_inp, inp_len, batch_first=True)
+    def decode(self, z, dec_inp):
+        n_batch = len(dec_inp)
+        packed_in = pack_sequence(dec_inp, enforce_sorted=False)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
         packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
@@ -69,19 +69,20 @@ class VRAE(nn.Module):
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = make_padded_ones(seq_len, self.n_input, self.get_device())
-            dec_out, out_len = self.decode(z, dec_inp, seq_len)
+            dec_inp = make_ones(seq_len, self.n_input, self.get_device())
+            dec_out, out_len = self.decode(z, dec_inp)
         return dec_out, out_len
 
-    def loss(self, enc_inp, inp_len, beta=1.0, k=1):
-        mu, ln_var = self.encode(enc_inp, inp_len)
-        n_batch = enc_inp.size(0)
-        dec_inp = make_padded_ones(inp_len, self.n_input, self.get_device())
+    def loss(self, enc_inp, beta=1.0, k=1):
+        mu, ln_var = self.encode(enc_inp)
+        n_batch = len(enc_inp)
+        inp_len = [len(s) for s in enc_inp]
+        dec_inp = make_ones(inp_len, self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)
-            dec_out, out_len = self.decode(z, dec_inp, inp_len)
-            for o, t in zip(make_unpadded_sequence(dec_out, out_len), make_unpadded_sequence(enc_inp, inp_len)):
+            dec_out, out_len = self.decode(z, dec_inp)
+            for o, t in zip(unpad_sequence(dec_out, out_len), unpad_sequence(enc_inp, inp_len)):
                 rec_loss += self.loss_func(o, t)
         rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())

@@ -3,10 +3,8 @@ import pickle
 
 import torch
 import torch.utils.data as tud
-from torch.nn.utils.rnn import pad_sequence
 
 from VRAE import VRAE
-from utils import make_padded_sequence
 import dataset
 
 
@@ -111,9 +109,9 @@ def train_model():
     for epoch in range(args.epoch):
         train_loss = 0
         for indices in train_iter:
-            x_data, x_len = make_padded_sequence([train_dat[idx] for idx in indices], device)
+            x_data = [train_dat[idx] for idx in indices]
             optimizer.zero_grad()
-            loss = model.loss(x_data, x_len, k=1)
+            loss = model.loss(x_data, k=1)
             loss.backward()
             optimizer.step()
             train_loss += loss
@@ -122,8 +120,8 @@ def train_model():
         test_loss = 0
         with torch.no_grad():
             for indices in test_iter:
-                x_data, x_len = make_padded_sequence([test_dat[idx] for idx in indices], device)
-                test_loss += model.loss(x_data, x_len, k=10)
+                x_data = [test_dat[idx] for idx in indices]
+                test_loss += model.loss(x_data, k=10)
 
         output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
 
