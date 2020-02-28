@@ -110,7 +110,7 @@ def train_model():
         train_loss = 0
         for indices in train_iter:
             x_data = [train_dat[idx] for idx in indices]
-            optimizer.zero_grad()
+            model.zero_grad()
             loss = model.loss(x_data, k=1)
             loss.backward()
             optimizer.step()
