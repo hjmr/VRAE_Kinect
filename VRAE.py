@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_sequence, pad_packed_sequence
 
-from utils import make_ones, unpad_sequence
+import utils
 
 
 class VRAE(nn.Module):
@@ -46,9 +46,10 @@ class VRAE(nn.Module):
     def get_device(self):
         return next(self.parameters()).device
 
-    def forward(self, enc_inp, dec_inp):
+    def forward(self, enc_inp):
         mu, ln_var = self.encode(enc_inp)
-        return self.decode(mu, dec_inp)
+        seq_len = [len(s) for s in enc_inp]
+        return self.decode(mu, seq_len)
 
     def encode(self, enc_inp):
         n_batch = len(enc_inp)
@@ -58,26 +59,26 @@ class VRAE(nn.Module):
         ln_var = self.enc_ln_var(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
         return mu, ln_var
 
-    def decode(self, z, dec_inp):
-        n_batch = len(dec_inp)
+    def decode(self, z, seq_len):
+        n_batch = len(seq_len)
+        dec_inp = utils.make_zeros(seq_len, self.n_input, self.get_device())
         packed_in = pack_sequence(dec_inp, enforce_sorted=False)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
         packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
         padded_out, out_len = pad_packed_sequence(packed_out, batch_first=True)
-        out = unpad_sequence(padded_out, out_len)
+        out = utils.unpad_sequence(padded_out, out_len)
         return [self.linear_out(s) for s in out]
 
     def generate(self, z, seq_len):
         with torch.no_grad():
-            dec_inp = make_ones(seq_len, self.n_input, self.get_device())
-            dec_out = self.decode(z, dec_inp)
+            dec_out = self.decode(z, seq_len)
         return dec_out
 
     def loss(self, enc_inp, beta=1.0, k=1):
         mu, ln_var = self.encode(enc_inp)
         n_batch = len(enc_inp)
-        dec_inp = make_ones([len(s) for s in enc_inp], self.n_input, self.get_device())
+        dec_inp = utils.make_zeros([len(s) for s in enc_inp], self.n_input, self.get_device())
         rec_loss = 0
         for _ in six.moves.range(k):
             z = torch.normal(mu, ln_var)

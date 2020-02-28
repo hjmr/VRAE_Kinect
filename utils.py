@@ -3,7 +3,12 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_se
 
 
 def make_ones(seq_len, n_elements, device):
-    seq = [torch.ones(s, n_elements).to(device) for s in seq_len]
+    seq = [torch.ones(s, n_elements, requires_grad=True).to(device) for s in seq_len]
+    return seq
+
+
+def make_zeros(seq_len, n_elements, device):
+    seq = [torch.zeros(s, n_elements, requires_grad=True).to(device) for s in seq_len]
     return seq
 
 
