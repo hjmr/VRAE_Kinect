@@ -41,7 +41,7 @@ class VRAE(nn.Module):
         self.dropout_rate = dropout_rate
 
         # Loss
-        self.loss_func = nn.MSELoss(reduction='sum')
+        self.loss_func = nn.MSELoss(reduction='mean')
 
     def get_device(self):
         return next(self.parameters()).device
@@ -87,4 +87,5 @@ class VRAE(nn.Module):
                 rec_loss += self.loss_func(o, t)
         rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())
+        print(rec_loss, kld)
         return rec_loss + beta * kld
