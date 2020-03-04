@@ -1,14 +1,18 @@
 import os
 import argparse
 
-COLUMN_TAGS = ['epoch', 'train/loss', 'test/loss']
+COLUMN_TAGS = ['epoch', 'train/loss', 'test/loss', '3', '4', '5', '6', '7', '8', '9', '10']
 
 
 def parse_arg():
     parser = argparse.ArgumentParser(description='Convert train.logs suitable to draw graph.')
-    parser.add_argument('-e', '--epoch', type=int, default=10, help='epochs to be converted.')
-    parser.add_argument('-t', '--tags', type=str, help='specify tag(s) included to log')
-    parser.add_argument('dirs', type=str, nargs='+', help='directorie name(s) contain log data.')
+    parser.add_argument('-e', '--epoch', type=int, default=10,
+                        help='epochs to be converted.')
+    parser.add_argument('-t', '--tags', type=str,
+                        help='specify tag(s) included to log. '
+                        'tag(s) should be one or more from {}'.format(COLUMN_TAGS))
+    parser.add_argument('dirs', type=str, nargs='+',
+                        help='directorie name(s) contain log data.')
     return parser.parse_args()
 
 
@@ -26,7 +30,7 @@ def conv_single_log(data_array, tag_array, file_name, file_tag, max_epoch, tags)
                 epoch = int(items[0])
                 if epoch <= max_epoch:
                     for idx in range(1, len(items)):
-                        if COLUMN_TAGS[idx] in tags:
+                        if tags is None or COLUMN_TAGS[idx] in tags:
                             item_tag = "{}/{}".format(file_tag, COLUMN_TAGS[idx])
                             register_data(data_array, tag_array, epoch, items[idx], item_tag)
 
