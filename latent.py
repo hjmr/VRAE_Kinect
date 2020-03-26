@@ -48,9 +48,8 @@ def get_latent(args):
     for data_file in args.data_files:
         file_names.append(str(os.path.basename(data_file)))
         seq = torch.FloatTensor([dataset.get(data_file)])
-        seq_len = [len(s) for s in seq]
         with torch.no_grad():
-            mu, ln_var = model.encode(seq, seq_len)
+            mu, ln_var = model.encode(seq)
             latents.append(mu[0].tolist())
     return latents, file_names
 
