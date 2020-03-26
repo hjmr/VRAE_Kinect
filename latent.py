@@ -40,7 +40,7 @@ def convert_file_name_to_label(file_name):
 
 
 def get_latent(args):
-    model = torch.load(args.model[0])
+    model = torch.load(args.model[0], map_location=torch.device('cpu'))
     model.eval()
 
     latents = []
