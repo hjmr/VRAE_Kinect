@@ -29,7 +29,7 @@ class VRAE(nn.Module):
                                num_layers=n_dec_layers,
                                dropout=dec_dropout,
                                batch_first=True)
-        self.dec_linear = nn.Linear(n_dec_hidden, n_input)
+        self.linear_out = nn.Linear(n_dec_hidden, n_input)
 
         # Parameters
         self.n_input = n_input
@@ -65,7 +65,7 @@ class VRAE(nn.Module):
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
         packed_out, _ = self.decoder(packed_in, (h_dec.view(self.n_dec_layers, n_batch, self.n_dec_hidden), dec_c0))
         dec_out, out_len = pad_packed_sequence(packed_out, batch_first=True)
-        return self.dec_linear(dec_out), out_len
+        return self.linear_out(dec_out), out_len
 
     def generate(self, z, seq_len):
         with torch.no_grad():
