@@ -30,7 +30,7 @@ def parse_arg():
                         help='a length of sequence to train at once.')
     parser.add_argument('-B', '--beta', type=float, default=1.0,
                         help='a parameter for KLD.')
-    parser.add_argument('-L', '--learning_rate', type=float, default=0.01,
+    parser.add_argument('-L', '--learning_rate', type=float, default=0.001,
                         help='learning rate')
     # output parameters
     parser.add_argument('-o', '--output_dir', type=str, default='.',
@@ -88,7 +88,7 @@ def train_model():
         model = VRAE(args.input_dims, args.enc_states, args.latent_dims, args.dec_states,
                      args.enc_layers, args.dec_layers, args.dropout_rate).to(device)
 
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     num_train = int(num_data * 0.8)
     num_test = num_data - num_train

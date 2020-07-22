@@ -26,7 +26,7 @@ save_int=20000
 batch_size=10
 beta=0.05
 
-n_hidden=300
-n_latent=3
+n_hidden=200
+n_latent=5
 n_layers=1
 run_once

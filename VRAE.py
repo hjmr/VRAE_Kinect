@@ -61,7 +61,7 @@ class VRAE(nn.Module):
 
     def decode(self, z, seq_len):
         n_batch = len(seq_len)
-        dec_inp = utils.make_zeros(seq_len, self.n_input, self.get_device())
+        dec_inp = utils.make_ones(seq_len, self.n_input, self.get_device())
         packed_in = pack_sequence(dec_inp, enforce_sorted=False)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
