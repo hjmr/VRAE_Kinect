@@ -78,7 +78,7 @@ class VRAE(nn.Module):
 
     def loss(self, enc_inp, beta=1.0, k=1):
         mu, ln_var = self.encode(enc_inp)
-        n_batch = len(enc_inp)
+        # n_batch = len(enc_inp)
         inp_len = [len(s) for s in enc_inp]
         rec_loss = 0
         for _ in six.moves.range(k):
