@@ -24,9 +24,9 @@ function run_once() {
 epoch=100
 save_int=20000
 batch_size=10
-beta=0.05
+beta=1.0
 
-n_hidden=200
-n_latent=5
+n_hidden=100
+n_latent=20
 n_layers=1
 run_once
