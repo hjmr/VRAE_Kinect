@@ -7,9 +7,9 @@ def flatten_skeleton_data(skel_data):
     for a_time_data in skel_data:
         entry = [0] * (len(a_time_data['joints']) * 3)  # num of joints * x, y, z
         for joint in a_time_data['joints']:
-            entry[joint['id'] * 3 + 0] = joint['x']
-            entry[joint['id'] * 3 + 1] = joint['y']
-            entry[joint['id'] * 3 + 2] = joint['z']
+            entry[joint['id'] * 3 + 0] = joint['x'] / 100.0
+            entry[joint['id'] * 3 + 1] = joint['y'] / 100.0
+            entry[joint['id'] * 3 + 2] = joint['z'] / 100.0
         data_flatten.append(entry)
     return data_flatten
 

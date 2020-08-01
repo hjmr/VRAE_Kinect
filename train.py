@@ -73,14 +73,6 @@ def train_model():
     with open('{}/args.pickle'.format(args.output_dir), 'wb') as f:
         pickle.dump(args, f)
 
-    print('# GPU: {}'.format(device))
-    print('# dataset num: {}'.format(num_data))
-    print('# input dimensions: {}'.format(args.input_dims))
-    print('# latent dimensions: {}'.format(args.latent_dims))
-    print('# minibatch-size: {}'.format(args.batch_size))
-    print('# epoch: {}'.format(args.epoch))
-    print('')
-
     if args.load_model is not None:
         model = torch.load(args.load_model)
         model.eval()
@@ -101,6 +93,15 @@ def train_model():
                                  batch_size=args.batch_size,
                                  drop_last=False)
 
+    print('# GPU: {}'.format(device))
+    print('# dataset num: {}'.format(num_data))
+    print('# train, test dataset num: {}, {}'.format(num_train, num_test))
+    print('# input dimensions: {}'.format(args.input_dims))
+    print('# latent dimensions: {}'.format(args.latent_dims))
+    print('# minibatch-size: {}'.format(args.batch_size))
+    print('# epoch: {}'.format(args.epoch))
+    print('')
+
     if args.resume_from_checkpoint is not None:
         checkpoint = torch.load(args.resume_from_checkpoint)
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -111,7 +112,7 @@ def train_model():
         for indices in train_iter:
             x_data = [train_dat[idx] for idx in indices]
             model.zero_grad()
-            loss = model.loss(x_data, beta=args.beta, k=1)
+            loss, rec_loss, kld = model.loss(x_data, beta=args.beta, k=1)
             loss.backward()
             optimizer.step()
             train_loss += loss
@@ -121,7 +122,8 @@ def train_model():
         with torch.no_grad():
             for indices in test_iter:
                 x_data = [test_dat[idx] for idx in indices]
-                test_loss += model.loss(x_data, beta=args.beta, k=10)
+                loss, rec_loss, kld = model.loss(x_data, beta=args.beta, k=10)
+                test_loss += loss
 
         output_log(epoch, train_loss / len(train_iter), test_loss / len(test_iter))
 

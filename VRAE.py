@@ -41,7 +41,7 @@ class VRAE(nn.Module):
         self.dropout_rate = dropout_rate
 
         # Loss
-        self.loss_func = nn.MSELoss(reduction='mean')
+        self.loss_func = nn.MSELoss(reduction="mean")
 
     def get_device(self):
         return next(self.parameters()).device
@@ -55,13 +55,14 @@ class VRAE(nn.Module):
         n_batch = len(enc_inp)
         packed_in = pack_sequence(enc_inp, enforce_sorted=False)
         _, (h_enc, _) = self.encoder(packed_in)
-        mu = self.enc_mu(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
-        ln_var = self.enc_ln_var(h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden))
+        h_enc = h_enc.view(n_batch, self.n_enc_layers * self.n_enc_hidden)
+        mu = self.enc_mu(h_enc)
+        ln_var = self.enc_ln_var(h_enc)
         return mu, ln_var
 
     def decode(self, z, seq_len):
         n_batch = len(seq_len)
-        dec_inp = utils.make_ones(seq_len, self.n_input, self.get_device())
+        dec_inp = utils.make_zeros(seq_len, self.n_input, self.get_device())
         packed_in = pack_sequence(dec_inp, enforce_sorted=False)
         h_dec = self.gen_z_h(z)
         dec_c0 = torch.zeros(self.n_dec_layers, n_batch, self.n_dec_hidden, requires_grad=True).to(self.get_device())
@@ -85,6 +86,14 @@ class VRAE(nn.Module):
             dec_out = self.decode(z, inp_len)
             for o, t in zip(dec_out, enc_inp):
                 rec_loss += self.loss_func(o, t)
-        rec_loss /= (k * n_batch)
+        # rec_loss /= (k * n_batch)
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())
-        return rec_loss + beta * kld
+        return rec_loss + beta * kld, rec_loss, kld
+
+
+if __name__ == "__main__":
+    model = VRAE(2, 5, 2, 5, 1, 1, 0)
+    for n, p in model.named_parameters():
+        print(n)
+        print(p)
+        print("--------")
