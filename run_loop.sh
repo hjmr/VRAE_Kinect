@@ -4,10 +4,8 @@ run_dir=.
 out_base=${run_dir}/models
 data_dir=../../Kinect/data/normalized
 
-GPUID=-1
-
 function run_once() {
-  out_dir=${out_base}/H${n_hidden}_Z${n_latent}_L${n_layers}_B${beta}
+  out_dir=${out_base}/H${n_hidden}_Z${n_latent}_L${n_layers}_B${beta}_BS${batch_size}_${loop_count}
 
   n_enc_layers=${n_layers}
   n_enc_hidden=${n_hidden}
@@ -24,17 +22,22 @@ function run_once() {
 
 epoch=1000
 save_int=20000
-batch_size=5
 
-for n_layers in 1 2
+for batch_size in 10
 do
-    for n_hidden in 100 300 500
+    for n_layers in 1 2
     do
-        for n_latent in 2 3 5
+        for n_hidden in 100 200
         do
-            for beta in 0.01 0.05 0.1 0.5
+            for n_latent in 10 20
             do
-                run_once
+                for beta in 1.0
+                do
+                    for loop_count in 01 02 03 04 05 06 07 08 09 10
+                    do
+                        run_once
+                    done
+                done
             done
         done
     done
