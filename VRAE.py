@@ -86,7 +86,11 @@ class VRAE(nn.Module):
             dec_out = self.decode(z, inp_len)
             for o, t in zip(dec_out, enc_inp):
                 rec_loss += self.loss_func(o, t)
+        # averaged over k * n_batch
         # rec_loss /= (k * n_batch)
+        # kld = -0.5 * torch.mean(1 + ln_var - mu.pow(2) - ln_var.exp())
+        # averaged over k
+        rec_loss /= k
         kld = -0.5 * torch.sum(1 + ln_var - mu.pow(2) - ln_var.exp())
         return rec_loss + beta * kld, rec_loss, kld
 
