@@ -7,7 +7,7 @@ COLUMN_TAGS = ('epoch', 'train/loss', 'test/loss')
 
 
 def parse_arg():
-    parser = argparse.ArgumentParser(description='Correct specified columns and generate CSV from train.logs.')
+    parser = argparse.ArgumentParser(description='Collect specified columns and generate CSV from train.logs.')
     parser.add_argument('-e', '--epoch', type=int, default=10,
                         help='epochs to be converted.')
     parser.add_argument('-t', '--tags', type=str, nargs=1,
