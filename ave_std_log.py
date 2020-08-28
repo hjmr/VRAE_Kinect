@@ -12,7 +12,7 @@ def parse_arg():
                         help='epochs to be converted.')
     parser.add_argument('-t', '--tag', type=str, nargs=1,
                         help='specify a column of the log by the tag. '
-                        'tag should be one from {}'.format(COLUMN_TAGS[:1]))
+                        'tag should be one from {}'.format(COLUMN_TAGS))
     parser.add_argument('-x', '--exclude_original', action='store_true',
                         help='to exclude original data.')
     parser.add_argument('-o', '--output', type=str,
