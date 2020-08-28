@@ -12,7 +12,7 @@ def parse_arg():
                         help='epochs to be converted.')
     parser.add_argument('-t', '--tags', type=str, nargs=1,
                         help='specify columns of the log by comma-seperated-tags. '
-                        'tag(s) should be one or more from {}'.format(COLUMN_TAGS[:1]))
+                        'tag(s) should be one or more from {}'.format(COLUMN_TAGS))
     parser.add_argument('-o', '--output', type=str,
                         help='specifyl filename to which save result in CSV.')
     parser.add_argument('dirs', type=str, nargs='+',
