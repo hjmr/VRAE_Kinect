@@ -96,7 +96,7 @@ class VRAE(nn.Module):
 
 
 if __name__ == "__main__":
-    model = VRAE(2, 5, 2, 5, 1, 1, 0)
+    model = VRAE(2, 5, 2, 5)
     for n, p in model.named_parameters():
         print(n)
         print(p)
