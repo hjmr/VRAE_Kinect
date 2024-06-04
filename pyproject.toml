@@ -3,19 +3,17 @@ name = "pytorch-vrae-kinect"
 version = "0.1.0"
 description = ""
 authors = ["hjmr <2620990+hjmr@users.noreply.github.com>"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "*"
-torch = "*"
-torchvision = "*"
-matplotlib = "*"
-scikit-learn = "*"
-japanize-matplotlib = "*"
+python = "^3.12"
+torch = "^2.3.0"
+torchvision = "^0.18.0"
+matplotlib = "^3.9.0"
+scikit-learn = "^1.5.0"
+japanize-matplotlib = "^1.1.3"
 
-[tool.poetry.dev-dependencies]
-autopep8 = "*"
-pylint = "*"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
